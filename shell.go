@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gorillalabs/go-powershell/backend"
-	"github.com/gorillalabs/go-powershell/utils"
+	"github.com/40a/go-powershell/backend"
+	"github.com/40a/go-powershell/utils"
 	"github.com/juju/errors"
 )
 
