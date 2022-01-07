@@ -94,11 +94,12 @@ func streamReader(stream io.Reader, boundary string, buffer *string, signal *syn
 	output := ""
 	bufsize := 64
 	marker := boundary + newline
-
+        defer signal.Done()
 	for {
 		buf := make([]byte, bufsize)
 		read, err := stream.Read(buf)
 		if err != nil {
+			*buffer = strings.TrimSuffix(output, marker)
 			return err
 		}
 
@@ -110,8 +111,6 @@ func streamReader(stream io.Reader, boundary string, buffer *string, signal *syn
 	}
 
 	*buffer = strings.TrimSuffix(output, marker)
-	signal.Done()
-
 	return nil
 }
 
