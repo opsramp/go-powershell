@@ -8,9 +8,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/40a/go-powershell/backend"
-	"github.com/40a/go-powershell/utils"
-	"github.com/juju/errors"
+	"errors"
+	bk "github.com/opsramp/go-powershell/backend"
+	"github.com/opsramp/go-powershell/utils"
 )
 
 const newline = "\r\n"
@@ -21,13 +21,13 @@ type Shell interface {
 }
 
 type shell struct {
-	handle backend.Waiter
+	handle bk.Waiter
 	stdin  io.Writer
 	stdout io.Reader
 	stderr io.Reader
 }
 
-func New(backend backend.Starter) (Shell, error) {
+func New(backend bk.Starter) (Shell, error) {
 	handle, stdin, stdout, stderr, err := backend.StartProcess("powershell.exe", "-NoExit", "-Command", "-")
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func New(backend backend.Starter) (Shell, error) {
 
 func (s *shell) Execute(cmd string) (string, string, error) {
 	if s.handle == nil {
-		return "", "", errors.Annotate(errors.New(cmd), "Cannot execute commands on closed shells.")
+		return "", "", errors.New("Cannot execute commands on closed shells.")
 	}
 
 	outBoundary := createBoundary()
@@ -49,7 +49,7 @@ func (s *shell) Execute(cmd string) (string, string, error) {
 
 	_, err := s.stdin.Write([]byte(full))
 	if err != nil {
-		return "", "", errors.Annotate(errors.Annotate(err, cmd), "Could not send PowerShell command")
+		return "", "", errors.New("Could not send PowerShell command, error info:" + err.Error())
 	}
 
 	// read stdout and stderr
@@ -65,7 +65,7 @@ func (s *shell) Execute(cmd string) (string, string, error) {
 	waiter.Wait()
 
 	if len(serr) > 0 {
-		return sout, serr, errors.Annotate(errors.New(cmd), serr)
+		return sout, serr, errors.New(serr)
 	}
 
 	return sout, serr, nil
@@ -94,7 +94,7 @@ func streamReader(stream io.Reader, boundary string, buffer *string, signal *syn
 	output := ""
 	bufsize := 64
 	marker := boundary + newline
-        defer signal.Done()
+	defer signal.Done()
 	for {
 		buf := make([]byte, bufsize)
 		read, err := stream.Read(buf)

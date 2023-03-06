@@ -6,7 +6,7 @@ import (
 	"io"
 	"os/exec"
 
-	"github.com/juju/errors"
+	"errors"
 )
 
 type Local struct{}
@@ -16,22 +16,22 @@ func (b *Local) StartProcess(cmd string, args ...string) (Waiter, io.Writer, io.
 
 	stdin, err := command.StdinPipe()
 	if err != nil {
-		return nil, nil, nil, nil, errors.Annotate(err, "Could not get hold of the PowerShell's stdin stream")
+		return nil, nil, nil, nil, errors.New("Could not get hold of the PowerShell's stdin stream, error info:" + err.Error())
 	}
 
 	stdout, err := command.StdoutPipe()
 	if err != nil {
-		return nil, nil, nil, nil, errors.Annotate(err, "Could not get hold of the PowerShell's stdout stream")
+		return nil, nil, nil, nil, errors.New("Could not get hold of the PowerShell's stdout stream, error info:" + err.Error())
 	}
 
 	stderr, err := command.StderrPipe()
 	if err != nil {
-		return nil, nil, nil, nil, errors.Annotate(err, "Could not get hold of the PowerShell's stderr stream")
+		return nil, nil, nil, nil, errors.New("Could not get hold of the PowerShell's stderr stream, error info:" + err.Error())
 	}
 
 	err = command.Start()
 	if err != nil {
-		return nil, nil, nil, nil, errors.Annotate(err, "Could not spawn PowerShell process")
+		return nil, nil, nil, nil, errors.New("Could not spawn PowerShell process, error info:" + err.Error())
 	}
 
 	return command, stdin, stdout, stderr, nil
